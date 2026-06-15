@@ -1,0 +1,46 @@
+{% extends 'collecteur/base.html' %}
+{% block content %}
+<style>
+    .form-container {
+        max-width: 600px; margin: 40px auto; background: white;
+        padding: 40px; border-radius: 16px; border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    .field-wrapper { margin-bottom: 20px; }
+    .field-wrapper label { display: block; margin-bottom: 8px; font-weight: 600; color: #334155; }
+    .field-wrapper input, .field-wrapper select, .field-wrapper textarea {
+        width: 100%; padding: 12px; border: 1px solid #cbd5e1;
+        border-radius: 8px; box-sizing: border-box; font-size: 16px;
+    }
+    .field-wrapper input:focus { outline: none; border-color: #16a34a; ring: 2px solid #dcfce7; }
+</style>
+
+<div class="form-container">
+    <h2 style="margin-bottom: 25px; color: #1e293b;">Nouvelle Collecte</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="field-wrapper">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+                <small style="color: #64748b;">{{ field.help_text }}</small>
+            {% endif %}
+            {% if field.errors %}
+                <div style="color: #dc2626; font-size: 12px; margin-top: 5px;">{{ field.errors }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn-add" style="border: none; cursor: pointer; width: 100%; justify-content: center; font-size: 16px; margin-top: 20px;">
+            Enregistrer la collecte
+        </button>
+    </form>
+
+    <a href="{% url 'collecteur:dashboard' %}" style="display: block; margin-top: 20px; text-align: center; color: #64748b; text-decoration: none; font-size: 14px;">
+        ← Retour au tableau de bord
+    </a>
+</div>
+{% endblock %}

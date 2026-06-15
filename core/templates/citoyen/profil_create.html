@@ -1,0 +1,85 @@
+{% extends 'citoyen/base_citoyen.html' %}
+
+{% block content %}
+<style>
+    /* Design du conteneur */
+    .form-card {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        border: 1px solid #f1f5f9;
+    }
+
+    .form-card h2 { color: #0f172a; margin-bottom: 8px; }
+    .form-card p { color: #64748b; margin-bottom: 30px; }
+
+    /* Sections du formulaire */
+    .form-section { margin-bottom: 25px; }
+    .form-section h4 {
+        color: #334155;
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Style des inputs */
+    .complex-form input,
+    .complex-form select {
+        width: 100%;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: border 0.3s;
+    }
+
+    .complex-form input:focus {
+        border-color: #16a34a;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: #16a34a;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .btn-submit:hover { background: #15803d; }
+</style>
+
+<div class="form-card">
+    <h2>Configuration de votre Espace Citoyen</h2>
+    <p>Ces informations nous aideront à optimiser les collectes dans votre quartier.</p>
+
+    <form method="post" class="complex-form">
+        {% csrf_token %}
+
+        <div class="form-section">
+            <h4>📍 Coordonnées géographiques</h4>
+            {{ form.adresse }}
+            {{ form.ville }}
+            {{ form.code_postal }}
+        </div>
+
+        <div class="form-section">
+            <h4>📞 Contact & Préférences</h4>
+            {{ form.telephone }}
+            {{ form.preference_collecte }}
+        </div>
+
+        <button type="submit" class="btn-submit">Valider mon inscription</button>
+    </form>
+</div>
+{% endblock %}

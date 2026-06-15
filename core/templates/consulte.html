@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoGest — Consulter les Collectes</title>
+
+  <style>
+    :root {
+      --primary: #38a169;
+      --primary-dark: #22543d;
+      --primary-light: #c6f6d5;
+      --bg-page: #f0fff4;
+      --white: #ffffff;
+      --radius: 12px;
+      --font-display: 'Inter', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-display);
+      background: var(--bg-page);
+      color: var(--primary-dark);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* === NAVIGATION === */
+    nav {
+      background: var(--primary);
+      padding: 0.8rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    /* Logo rendu cliquable vers l'accueil */
+    .nav-brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      text-decoration: none;
+      color: white;
+    }
+    .nav-brand em { color: var(--primary-light); font-style: normal; }
+
+    .nav-links { display: flex; gap: 20px; align-items: center; }
+    .nav-links a { color: #e6fffa; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
+    .nav-links a:hover { color: white; }
+
+    /* === CONTENT CONTAINER === */
+    .content-container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 0 20px;
+      width: 100%;
+    }
+
+    .header-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .header-section h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+
+    .btn-add {
+      background: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    .btn-add:hover { background: var(--primary-dark); }
+
+    /* === TABLE STYLE === */
+    .table-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 2px solid var(--primary-light);
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    thead {
+      background: var(--primary-light);
+    }
+
+    th {
+      padding: 15px 20px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary-dark);
+    }
+
+    td {
+      padding: 18px 20px;
+      border-bottom: 1px solid #edf2f7;
+      font-size: 14px;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    /* === BADGES DYNAMIQUES === */
+    .badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+    /* Couleurs selon le slugify du statut */
+    .status-en-attente, .status-planifiee { background: #feebc8; color: #975a16; }
+    .status-confirmee { background: #ebf8ff; color: #2b6cb0; }
+    .status-terminee { background: #c6f6d5; color: #22543d; }
+
+    .dechet-tag {
+      display: inline-block;
+      background: #ebf8ff;
+      color: #2b6cb0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-right: 5px;
+    }
+
+    .empty-state {
+      padding: 60px;
+      text-align: center;
+      color: #718096;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="{% url 'core:home' %}" class="nav-brand">Clean<em>city</em></a>
+  <div class="nav-links">
+    <a href="{% url 'core:liste_collecteurs' %}">Tableau de bord</a>
+    <a href="{% url 'core:logout' %}" style="opacity: 0.7;">Se déconnecter</a>
+  </div>
+</nav>
+
+<div class="content-container">
+  <div class="header-section">
+    <div>
+      <h1>Historique des Collectes</h1>
+      <p style="color: #718096; margin: 5px 0 0 0;">Liste de toutes les missions planifiées et terminées.</p>
+    </div>
+
+  </div>
+
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Collecteur</th>
+          <th>Catégorie</th>
+          <th>Observations</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for collecte in collectes %}
+        <tr>
+          <td><strong>{{ collecte.date|date:"d/m/Y" }}</strong></td>
+          <td>{{ collecte.collecteur.username }}</td>
+          <td><span class="dechet-tag">{{ collecte.get_type_principal_display }}</span></td>
+          <td style="max-width: 250px; color: #4a5568;">
+            {{ collecte.observations_dechets|default:"Aucun détail"|truncatechars:50 }}
+          </td>
+          <td>
+            <span class="badge status-{{ collecte.statut|slugify }}">
+                {{ collecte.statut }}
+            </span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="empty-state">
+            Aucune collecte enregistrée pour le moment.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</body>
+</html>

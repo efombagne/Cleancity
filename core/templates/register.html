@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscription - CleanCity</title>
+    <style>
+        body { font-family: sans-serif; background: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .form-container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: #1e293b; margin-bottom: 20px; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #64748b; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .alert { color: #dc2626; font-size: 12px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Inscription</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Nom d'utilisateur</label>
+            <!-- Assurez-vous que le 'name' est bien 'username' -->
+                 <input type="text" name="username" id="username" placeholder="Entrez votre nom d'utilisateur" required>
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label>Mot de passe</label>
+            <input type="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <label>Confirmer le mot de passe</label>
+            <input type="password" name="password2" required>
+        </div>
+        <div class="form-group">
+            <label>Rôle</label>
+            <select name="role">
+                <option value="citoyen">Citoyen</option>
+                <option value="collecteur">Collecteur</option>
+                <option value="centre_de_tri">Centre de tri</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-full">Créer mon compte</button>
+    </form>
+
+      <div class="footer">
+        Déjà un compte ? <a href="{% url 'collecteur:login' %}">Se connecter</a>
+      </div>
+</div>
+
+</body>
+</html>

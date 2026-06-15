@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Planifier la Mission #{{ collecte.id }}{% endblock %}
+
+{% block extra_css %}
+/* On ne garde que le style spécifique à la carte Kanban ici */
+.kanban-container { width: 100%; max-width: 600px; margin-top: 20px; }
+.task-card {
+    background: var(--white);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    border-top: 5px solid var(--accent);
+    padding: 25px;
+}
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+.status-badge {
+    background: #ebf5ff; color: var(--accent);
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 0.8rem; font-weight: bold; text-transform: uppercase;
+}
+.form-group { margin-bottom: 20px; }
+.form-control {
+    width: 100%; padding: 12px; border: 1px solid #dfe6e9;
+    border-radius: 8px; background: #fafafa; box-sizing: border-box;
+}
+.btn-group { display: flex; gap: 12px; margin-top: 30px; }
+.btn { flex: 1; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; border: none; }
+.btn-primary { background-color: var(--success); color: white; }
+.btn-secondary { background-color: #95a5a6; color: white; }
+{% endblock %}
+
+{% block content %}
+<div class="kanban-container">
+    <div class="task-card">
+        <div class="task-header">
+            <h2>Planifier la mission</h2>
+            <span class="status-badge">{{ collecte.statut }}</span>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Date prévue</label>
+                <input type="date" name="date" class="form-control" value="{{ collecte.date|date:'Y-m-d' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Assigner un agent collecteur</label>
+                <select name="collecteur" class="form-control" required>
+                    <option value="">-- Sélectionner l'agent --</option>
+                    {% for agent in collecteurs %}
+                        <option value="{{ agent.id }}">{{ agent.username }} ({{ agent.vehicule }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Itinéraire détaillé</label>
+                <textarea name="itineraire" class="form-control" rows="4">{{ collecte.itineraire }}</textarea>
+            </div>
+
+            <div class="btn-group">
+                <a href="{% url 'core:liste_collecteurs' %}" class="btn btn-secondary">Retour</a>
+                <button type="submit" class="btn btn-primary">Confirmer & Planifier</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'collecteur/base.html' %}
+{% block content %}
+<div class="form-container" style="max-width: 600px; margin: 40px auto; padding: 40px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+    <h2 style="margin-bottom: 25px; color: #1e293b;">Finaliser la collecte</h2>
+    
+    <div style="margin-bottom: 30px; padding: 20px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #16a34a;">
+        <p style="margin: 0; color: #334155;">
+            Vous êtes sur le point de valider la collecte de <strong>{{ dechets|length }}</strong> déchet(s).
+        </p>
+    </div>
+
+    <ul style="list-style: none; padding: 0; margin-bottom: 30px;">
+        {% for dechet in dechets %}
+        <li style="padding: 10px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">
+            <span>{{ dechet.type }}</span>
+            <span style="font-weight: bold;">{{ dechet.poids }} kg</span>
+        </li>
+        {% endfor %}
+    </ul>
+<form method="post">
+    {% csrf_token %}
+
+    <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; color: #334155; font-weight: bold;">Statut de la collecte :</label>
+        <select name="statut" required
+                style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; box-sizing: border-box;">
+            <option value="en_attente">En attente</option>
+            <option value="en_cours">En cours</option>
+            <option value="termine">Terminé</option>
+        </select>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; color: #334155; font-weight: bold;">Date de la collecte :</label>
+        <input type="date" name="date" required
+               style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box;">
+    </div>
+
+    <button type="submit" style="width: 100%; padding: 16px; background: #16a34a; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: background 0.3s;">
+        Confirmer et valider la collecte
+    </button>
+</form>
+
+    <a href="{% url 'collecteur:selection_dechets' %}" style="display: block; margin-top: 20px; text-align: center; color: #64748b; text-decoration: none; font-size: 14px;">
+        ← Annuler et revenir à la sélection
+    </a>
+</div>
+{% endblock %}

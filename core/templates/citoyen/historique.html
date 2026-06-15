@@ -1,0 +1,77 @@
+{% extends 'citoyen/base_citoyen.html' %}
+
+{% block content %}
+<style>
+  .historique-container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 20px; font-family: 'Poppins', sans-serif; }
+
+  /* Style du tableau */
+  .table-container {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #f8fafc; padding: 18px 24px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 18px 24px; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+  tr:hover { background: #f1fdf4; transition: 0.2s; }
+
+  /* Badges de statut */
+  .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+  .status-badge.termine, .status-badge.recycle, .status-badge.collecte { background: #dcfce7; color: #15803d; }
+  .status-badge.en_attente { background: #fef3c7; color: #d97706; }
+
+  /* Icone Action */
+  .btn-details { color: #64748b; font-size: 18px; transition: 0.2s; display: inline-block; }
+  .btn-details:hover { color: #16a34a; transform: scale(1.1); }
+</style>
+
+<div class="historique-container">
+  <h1 style="font-size: 24px; margin-bottom: 24px; color: #1e293b;">
+    <i class="ri-history-line" style="color: #16a34a;"></i> Historique des déclarations
+  </h1>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Déchet / Poids</th>
+          <th>Date</th>
+          <th>Statut</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dechet in tous_mes_dechets %}
+        <tr>
+          <td style="font-family: monospace; font-weight: 600; color: #94a3b8;">#{{ dechet.id|stringformat:"04d" }}</td>
+          <td>
+            <div style="font-weight: 600; color: #1e293b;">{{ dechet.type|default:"Déchet" }}</div>
+            <div style="font-size: 12px; color: #64748b;">{{ dechet.poids }} kg</div>
+          </td>
+          <td style="color: #64748b;">{{ dechet.date_creation|date:"d M Y" }}</td>
+          <td>
+            <span class="status-badge {{ dechet.etat }}">
+              {{ dechet.get_etat_display|default:"Terminé" }}
+            </span>
+          </td>
+          <td style="text-align: right;">
+            <a href="{% url 'core:detail_declaration' dechet.id %}" class="btn-details" title="Voir les détails">
+              <i class="ri-eye-line"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">
+            Aucune déclaration enregistrée pour le moment.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

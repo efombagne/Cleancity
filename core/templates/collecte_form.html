@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoGest — Nouvelle Collecte</title>
+
+  <style>
+    :root {
+      --primary: #38a169;       /* Vert vif CleanCity */
+      --primary-dark: #22543d;  /* Vert sombre */
+      --primary-light: #c6f6d5; /* Vert clair bordures */
+      --bg-page: #f0fff4;       /* Fond vert pâle */
+      --white: #ffffff;
+      --radius: 12px;
+      --font-display: 'Inter', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-display);
+      background: var(--bg-page);
+      color: var(--primary-dark);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* === NAVIGATION === */
+    nav {
+      background: var(--primary);
+      padding: 0.8rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .nav-brand { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em; }
+    .nav-brand em { color: var(--primary-light); font-style: normal; }
+
+    .nav-links { display: flex; gap: 20px; align-items: center; }
+    .nav-links a { color: #e6fffa; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
+    .nav-links a:hover { color: white; }
+
+    .logout-btn {
+      background: rgba(255,255,255,0.15);
+      padding: 6px 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white !important;
+      font-weight: 600;
+    }
+    .logout-btn:hover { background: #e53e3e; border-color: #c53030; }
+
+    /* === FORM CARD === */
+    .main-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .form-card {
+      background: var(--white);
+      width: 100%;
+      max-width: 550px;
+      padding: 40px;
+      border-radius: var(--radius);
+      border: 2px solid var(--primary-light);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+
+    .subtitle {
+      color: #718096;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    /* === FORM ELEMENTS === */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--primary-light);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.2s;
+      background: #fafdfb;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(56, 161, 105, 0.1);
+    }
+
+    .help-text {
+      font-size: 11px;
+      color: #a0aec0;
+      margin-top: 5px;
+    }
+
+    /* === BUTTONS === */
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+      text-align: center;
+      text-decoration: none;
+      color: #718096;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-cancel:hover { color: #2d3748; }
+    /* Style pour la liste des déchets (id automatique de Django) */
+#id_dechets {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Deux colonnes */
+  gap: 12px;
+  list-style: none;
+  padding: 15px;
+  background: #fafdfb;
+  border: 1px dashed var(--primary-light);
+  border-radius: 10px;
+}
+
+#id_dechets li {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+#id_dechets input[type="checkbox"] {
+  width: auto; /* Empêche la case de prendre toute la largeur */
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+#id_dechets label {
+  margin-bottom: 0;
+  text-transform: none; /* Garde le texte tel quel */
+  font-weight: 500;
+}
+
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="{% url 'core:home' %}" class="nav-brand">Clean<em>city</em></a>
+  <div class="nav-links">
+    <a href="{% url 'core:liste_collecteurs' %}">Retour au tableau</a>
+    <a href="{% url 'core:logout' %}" class="logout-btn">Se déconnecter</a>
+  </div>
+</nav>
+
+<div class="main-container">
+  <div class="form-card">
+    <h1>Nouvelle Collecte</h1>
+    <p class="subtitle">Remplissez les informations pour planifier une nouvelle mission.</p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+          <div class="help-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% for error in field.errors %}
+          <div style="color: #e53e3e; font-size: 12px; margin-top: 5px;">{{ error }}</div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+
+      <div class="actions">
+        <button type="submit" class="btn-submit">Créer la mission de collecte</button>
+        <a href="{% url 'core:liste_collecteurs' %}" class="btn-cancel">Annuler et revenir</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

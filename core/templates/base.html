@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CleanCity{% endblock %}</title>
+    <style>
+        :root {
+            --bg-body: #f4f7f6; --primary: #2c3e50; --accent: #3498db;
+            --success: #27ae60; --white: #ffffff; --text-muted: #7f8c8d;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body); color: var(--primary);
+            margin: 0; display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        nav {
+            background: var(--success); padding: 1rem 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-brand { font-size: 1.5rem; font-weight: bold; color: var(--primary); text-decoration: none; }
+        .nav-brand em { color: white; font-style: normal; }
+
+        main { flex: 1; display: flex; justify-content: center; padding: 40px 20px; }
+
+        footer { background: var(--primary); color: white; text-align: center; padding: 20px; margin-top: auto; }
+
+        /* Bloc pour le CSS spécifique des pages enfants */
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="{% url 'core:home' %}" class="nav-brand">Clean<em>city</em></a>
+        <div class="nav-links">
+            <a href="{% url 'core:liste_collecteurs' %}" style="text-decoration:none; color:white;">Tableau de Bord</a>
+            <a href="{% url 'core:logout' %}" style="margin-left:20px; text-decoration:none; color:white;">Déconnexion</a>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        CleanCity &copy; 2026 - Gestion des déchets
+    </footer>
+
+</body>
+</html>

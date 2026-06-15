@@ -1,0 +1,113 @@
+{% extends 'citoyen/base_citoyen.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Structure principale */
+    .detail-container { width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Poppins', sans-serif; padding: 20px; }
+
+    .back-link { display: inline-flex; align-items: center; gap: 8px; color: #64748b; text-decoration: none; font-size: 14px; font-weight: 500; margin-bottom: 24px; transition: color 0.2s; }
+    .back-link:hover { color: #0f172a; }
+
+    /* Carte de détail */
+    .detail-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+
+    /* Header */
+    .detail-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 24px; margin-bottom: 28px; }
+    .detail-header h1 { font-size: 22px; font-weight: 700; color: #0f172a; margin: 0 0 4px 0; }
+    .ref-text { font-family: monospace; color: #94a3b8; font-size: 14px; font-weight: 600; }
+
+    /* Badges de statut */
+    .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    .status-en_attente { background: #fef3c7; color: #d97706; }
+    .status-collecte, .status-termine, .status-recycle { background: #dcfce7; color: #15803d; }
+
+    /* Grille d'informations */
+    .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; }
+    .info-group { display: flex; align-items: center; gap: 16px; }
+    .icon-box { width: 44px; height: 44px; background: #f0fdf4; color: #16a34a; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .info-content { display: flex; flex-direction: column; }
+    .info-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; }
+    .info-value { font-size: 16px; font-weight: 500; color: #334155; }
+
+    /* Section Image */
+    .image-section { margin-top: 32px; }
+    .section-title { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1.2px; }
+    .photo-card { position: relative; display: inline-block; padding: 8px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; }
+    .image-wrapper { border-radius: 10px; overflow: hidden; line-height: 0; }
+    .dechet-image { max-width: 100%; width: 320px; height: 200px; object-fit: cover; display: block; transition: transform 0.6s ease; }
+    .photo-card:hover { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15); transform: translateY(-5px); border-color: #16a34a; }
+    .photo-card:hover .dechet-image { transform: scale(1.08); }
+
+    /* Bouton */
+    .btn-refresh { display: inline-flex; align-items: center; gap: 8px; background: #16a34a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 30px; transition: background 0.2s; }
+    .btn-refresh:hover { background: #15803d; }
+</style>
+
+<div class="detail-container">
+    <a href="javascript:history.back()" class="back-link">
+        <i class="ri-arrow-left-line"></i> Retour
+    </a>
+
+    <div class="detail-card">
+        <div class="detail-header">
+            <div>
+                <h1>Détails de la déclaration</h1>
+                <span class="ref-text">ID: #{{ dechet.id|stringformat:"06d" }}</span>
+            </div>
+            <span class="status-badge status-{{ dechet.etat }}">
+                {{ dechet.get_etat_display|default:dechet.etat }}
+            </span>
+        </div>
+
+        <div class="detail-grid">
+            <div class="info-group">
+                <div class="icon-box"><i class="ri-recycle-line"></i></div>
+                <div class="info-content">
+                    <span class="info-label">Type de résidu</span>
+                    <span class="info-value">{{ dechet.get_type_display }}</span>
+                </div>
+            </div>
+
+            <div class="info-group">
+                <div class="icon-box"><i class="ri-scales-3-line"></i></div>
+                <div class="info-content">
+                    <span class="info-label">Poids mesuré</span>
+                    <span class="info-value">{{ dechet.poids }} kg</span>
+                </div>
+            </div>
+
+            <div class="info-group">
+                <div class="icon-box"><i class="ri-calendar-event-line"></i></div>
+                <div class="info-content">
+                    <span class="info-label">Date d'enregistrement</span>
+                    <span class="info-value">{{ dechet.date_creation|date:"d M Y, H:i" }}</span>
+                </div>
+            </div>
+
+            <div class="info-group">
+                <div class="icon-box"><i class="ri-map-pin-2-line"></i></div>
+                <div class="info-content">
+                    <span class="info-label">Localisation</span>
+                    <span class="info-value">{{ dechet.localisation|default:"Non spécifié" }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if dechet.image %}
+        <div class="image-section">
+            <h3 class="section-title">Photo du déchet</h3>
+            <div class="photo-card">
+                <div class="image-wrapper">
+                    <img src="{{ dechet.image.url }}" alt="Photo du déchet" class="dechet-image">
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <a href="{% url 'core:suivi_collecte' dechet.id %}" class="btn-refresh">
+            <i class="ri-refresh-line"></i> Suivre en temps réel
+        </a>
+    </div>
+</div>
+{% endblock %}

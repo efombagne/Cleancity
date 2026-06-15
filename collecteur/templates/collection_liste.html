@@ -1,0 +1,101 @@
+{% extends 'base_collecte.html' %}
+
+{% block content %}
+<style>
+    /* Structure globale */
+    .page-header { margin-bottom: 24px; }
+
+    .table-container {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    th {
+        background: #f8fafc;
+        padding: 16px 20px;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    td {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.9rem;
+        color: #334155;
+    }
+
+    /* Style du badge de statut */
+    .badge-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: #fff7ed;
+        color: #c2410c;
+        border: 1px solid #fed7aa;
+    }
+
+    /* Bouton action */
+    .btn-manage {
+        background: #16a34a;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .btn-manage:hover { background: #15803d; }
+</style>
+
+<div class="page-header">
+    <h2>Collectes en attente de gestion</h2>
+    <p style="color: #64748b;">Sélectionnez une collecte pour modifier ses détails.</p>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Statut</th>
+                <th style="text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in collectes %}
+            <tr>
+                <td style="font-weight: 600;">{{ c.date|date:"d M Y" }}</td>
+                <td>{{ c.get_type_principal_display|default:"Non classé" }}</td>
+                <td>
+                    <span class="badge-status">{{ c.get_statut_display }}</span>
+                </td>
+                <td style="text-align: right;">
+                    <a href="{% url 'collecteur:gerer_collecte' c.id %}" class="btn-manage">
+                        Gérer
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align:center; padding: 40px; color: #94a3b8;">
+                    Aucune collecte en attente pour le moment.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

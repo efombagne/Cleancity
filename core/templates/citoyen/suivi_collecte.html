@@ -1,0 +1,97 @@
+{% extends 'citoyen/base_citoyen.html' %}
+{% load static %}
+
+{% block content %}
+
+    <style>
+        :root {
+            --primary: #16a34a;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text-main); padding: 40px 20px; }
+
+        .tracking-container { max-width: 600px; margin: 0 auto; background: var(--card-bg); padding: 40px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+
+        /* Bouton retour */
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; margin-bottom: 24px; transition: color 0.2s; }
+        .back-btn:hover { color: var(--primary); }
+
+        h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: var(--text-muted); margin-bottom: 24px; font-size: 14px; }
+
+        .status-badge { display: inline-flex; align-items: center; background: #dcfce7; color: #15803d; padding: 6px 16px; border-radius: 50px; font-weight: 600; font-size: 13px; margin-bottom: 32px; border: 1px solid #bbf7d0; }
+
+        /* TIMELINE MODERNISÉE */
+        .timeline { position: relative; padding-left: 20px; }
+        .timeline::before { content: ""; position: absolute; left: 19px; top: 10px; width: 1px; height: calc(100% - 40px); background: var(--border); }
+
+        .timeline-item { position: relative; display: flex; gap: 24px; margin-bottom: 32px; }
+
+        .timeline-icon { width: 40px; height: 40px; border-radius: 12px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; font-size: 18px; color: var(--text-muted); border: 2px solid white; transition: 0.3s ease; }
+
+        .timeline-item.active .timeline-icon { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3); }
+        .timeline-item.completed .timeline-icon { background: #dcfce7; color: var(--primary); }
+        .timeline-item.disabled .timeline-icon { background: #f8fafc; border-style: dashed; }
+
+        .timeline-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+        .timeline-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        .timeline-date { font-size: 12px; font-weight: 500; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <div class="tracking-container">
+        <!-- Bouton Retour -->
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i> Retour
+        </a>
+
+        <h2>Suivi de votre mission</h2>
+        <p class="subtitle">Déclaration n° <b>{{ declaration.id }}</b></p>
+
+        <div class="status-badge">
+            <i class="fa-solid fa-circle-check" style="margin-right: 8px;"></i>
+            {{ declaration.get_statut_display }}
+        </div>
+
+        <div class="timeline">
+            <!-- Item 1 -->
+            <div class="timeline-item {% if declaration.statut == 'EN_ATTENTE' %}active{% else %}completed{% endif %}">
+                <div class="timeline-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                <div class="timeline-content">
+                    <div class="timeline-title">Déclaration reçue</div>
+                    <div class="timeline-date">{{ declaration.date_creation|date:"d M Y, H:i" }}</div>
+                </div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="timeline-item {% if declaration.statut == 'AFFECTE' %}active{% elif declaration.statut == 'PROGRAMME' or declaration.statut == 'TERMINE' %}completed{% else %}disabled{% endif %}">
+                <div class="timeline-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                <div class="timeline-content">
+                    <div class="timeline-title">Collecteur assigné</div>
+                    <div class="timeline-desc">
+                        {% if declaration.collecteur %} {{ declaration.collecteur.nom }} {% else %} En cours d'assignation... {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="timeline-item {% if declaration.statut == 'PROGRAMME' %}active{% elif declaration.statut == 'TERMINE' %}completed{% else %}disabled{% endif %}">
+                <div class="timeline-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                <div class="timeline-content">
+                    <div class="timeline-title">Collecte programmée</div>
+                    <div class="timeline-desc">
+                        {% if declaration.date_collecte %} {{ declaration.date_collecte|date:"d F Y" }} {% else %} Date non définie {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+{% endblock %}}

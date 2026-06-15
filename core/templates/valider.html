@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Validation du Dépôt #{{ collecte.id }}{% endblock %}
+
+{% block extra_css %}
+.confirm-container { width: 100%; max-width: 500px; margin-top: 20px; }
+.confirm-card {
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 30px;
+    border-left: 8px solid var(--success); /* Bordure verte pour la validation */
+}
+.summary-box {
+    background: #f8faf9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+.form-group { margin-bottom: 15px; }
+.form-control {
+    width: 100%; padding: 10px; border: 1px solid #ddd;
+    border-radius: 6px; box-sizing: border-box;
+}
+.btn-validate {
+    width: 100%; background: var(--success); color: white;
+    padding: 12px; border: none; border-radius: 6px;
+    font-weight: bold; cursor: pointer; font-size: 1rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="confirm-container">
+    <div class="confirm-card">
+        <h2 style="margin-top:0;">Valider le dépôt final</h2>
+        
+        <div class="summary-box">
+            <p><strong>Mission :</strong> #{{ collecte.id }}</p>
+            <p><strong>Type :</strong> {{ collecte.get_type_principal_display }}</p>
+            <p><strong>Collecteur :</strong> {{ collecte.collecteur.username }}</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Poids réel constaté (kg)</label>
+                <input type="number" name="poids_reel" class="form-control" placeholder="Ex: 45.5" step="0.1">
+            </div>
+
+            <div class="form-group">
+                <label>Observations / Notes</label>
+                <textarea name="notes" class="form-control" rows="3" placeholder="État des déchets, incident..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-validate">Confirmer l'arrivée au centre</button>
+            <a href="{% url 'core:liste_collecteurs' %}" style="display:block; text-align:center; margin-top:15px; color:var(--text-muted); text-decoration:none; font-size:0.9rem;">Annuler</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

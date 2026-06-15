@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoGest — Bienvenue</title>
+  <style>
+    :root {
+      --primary: #38a169;
+      --primary-dark: #22543d;
+      --primary-soft: #f0fff4;
+      --text-main: #2d3748;
+      --text-muted: #718096;
+      --border: #e2e8f0;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: #f0fff4;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* === Panneau gauche === */
+    .auth-left {
+      width: 420px; flex-shrink: 0;
+      background: var(--primary);
+      padding: 3rem;
+      display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; overflow: hidden;
+    }
+    .auth-left::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 120% 10%, rgba(255,255,255,0.15) 0%, transparent 55%),
+        radial-gradient(ellipse at -20% 90%, rgba(255,255,255,0.1) 0%, transparent 50%);
+    }
+    .auth-left-brand {
+      font-size: 1.8rem; font-weight: 700;
+      color: #fff; letter-spacing: -0.03em; position: relative;
+    }
+    .auth-left-brand em { color: #c6f6d5; font-style: normal; }
+    .auth-left-body { position: relative; z-index: 1; }
+    .auth-left-body h2 {
+      font-size: 2.2rem; font-weight: 700;
+      color: #fff; margin-bottom: 1rem;
+    }
+    .auth-left-body p { font-size: 15px; color: #e6fffa; line-height: 1.7; }
+    .auth-left-foot { font-size: 12px; color: #c6f6d5; position: relative; }
+
+    /* === Panneau droit === */
+    .auth-right {
+      flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem;
+    }
+    .auth-form-wrap { width: 100%; max-width: 440px; }
+
+    .auth-header h1 {
+      font-size: 1.8rem; font-weight: 800;
+      color: var(--primary-dark); margin-bottom: 8px;
+    }
+    .sub { font-size: 14px; color: var(--text-muted); margin-bottom: 2rem; }
+    .sub a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+    /* === Alertes === */
+    .alert {
+      padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 500;
+    }
+    .alert-error { background: #fff5f5; color: #c53030; border-left: 4px solid #f56565; }
+    .alert-success { background: #f0fff4; color: #2f855a; border-left: 4px solid #48bb78; }
+
+    /* === Cartes de rôle (Nouveau Style) === */
+    .role-grid { display: flex; flex-direction: column; gap: 1rem; }
+    .role-card-link { text-decoration: none; display: block; }
+
+    .role-card {
+      display: flex; align-items: center; padding: 1.25rem;
+      background: white; border: 2px solid var(--border);
+      border-radius: 15px; transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .role-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      background: var(--primary-soft);
+    }
+
+    .role-icon-box {
+      width: 54px; height: 54px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; border-radius: 12px; margin-right: 1.25rem; flex-shrink: 0;
+      background: #f7fafc; transition: 0.3s;
+    }
+    .role-card:hover .role-icon-box { background: white; transform: scale(1.1); }
+
+    .role-content { flex-grow: 1; }
+    .role-title { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); }
+    .role-description { margin-top: 4px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+
+    .role-arrow { font-size: 1.2rem; color: var(--border); transition: 0.3s; margin-left: 10px; }
+    .role-card:hover .role-arrow { color: var(--primary); transform: translateX(5px); }
+
+    /* === Formulaire de connexion === */
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { font-size: 13px; font-weight: 600; color: var(--primary-dark); margin-bottom: 8px; display: block; }
+    .form-group input {
+      width: 100%; padding: 12px; border: 2px solid var(--border);
+      border-radius: 10px; font-size: 14px; transition: 0.2s;
+    }
+    .form-group input:focus { border-color: var(--primary); outline: none; background: white; }
+
+    .btn-primary {
+      width: 100%; background: var(--primary); color: white; border: none;
+      padding: 14px; border-radius: 10px; font-weight: 700; font-size: 15px;
+      cursor: pointer; transition: 0.2s;
+    }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+    @media (max-width: 850px) { .auth-left { display: none; } }
+  </style>
+</head>
+<body>
+
+<div class="auth-left">
+  <div class="auth-left-brand">Clean<em>city</em></div>
+  <div class="auth-left-body">
+    <h2>Bienvenue sur Cleancity</h2>
+    <p>La plateforme intelligente pour la gestion, la collecte et la revalorisation des déchets au Cameroun.</p>
+  </div>
+  <div class="auth-left-foot">©️ 2026 Cleancity Cameroun</div>
+</div>
+
+<div class="auth-right">
+  <div class="auth-form-wrap">
+
+    {% if user.is_authenticated %}
+      <div class="auth-header">
+        <h1>Choisissez votre rôle</h1>
+        <p class="sub">Comment souhaitez-vous utiliser EcoGest aujourd'hui ?</p>
+      </div>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="role-grid">
+        <a href="{% url 'collecteur:register' %}" class="role-card-link">
+          <div class="role-card">
+            <div class="role-icon-box">🌱</div>
+            <div class="role-content">
+              <h3 class="role-title">Générateur</h3>
+              <p class="role-description">Déclarez vos déchets et suivez vos demandes de collecte.</p>
+            </div>
+            <div class="role-arrow">→</div>
+          </div>
+        </a>
+
+
+        <a href="{% url 'collecteur:register' %}" class="role-card-link">
+          <div class="role-card">
+            <div class="role-icon-box">🚛</div>
+            <div class="role-content">
+              <h3 class="role-title">Collecteur</h3>
+              <p class="role-description">Gérez vos tournées et mettez à jour le statut des ramassages.</p>
+            </div>
+            <div class="role-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="" class="role-card-link">
+          <div class="role-card">
+            <div class="role-icon-box">♻️</div>
+            <div class="role-content">
+              <h3 class="role-title">Centre de tri</h3>
+              <p class="role-description">Pilotez le recyclage et lancez des campagnes de sensibilisation.</p>
+            </div>
+            <div class="role-arrow">→</div>
+          </div>
+        </a>
+      </div>
+
+    {% else %}
+      <div class="auth-header">
+        <h1>Se connecter</h1>
+        <p class="sub">Pas encore de compte ? <a href="{% url 'core:register' %}">S'inscrire gratuitement</a></p>
+      </div>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" action="{% url 'core:login' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="email">Identifiant ou Email</label>
+          <input type="text" id="email" name="email" placeholder="Nom d'utilisateur" required autofocus />
+        </div>
+        <div class="form-group">
+          <label for="password">Mot de passe</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn-primary">Accéder à mon espace</button>
+      </form>
+    {% endif %}
+
+  </div>
+</div>
+
+</body>
+</html>

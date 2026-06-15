@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Créer profil citoyen</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+
+  <style>
+    body{
+      margin:0;
+      font-family:Poppins,sans-serif;
+      background:#f6f7fb;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+    }
+
+    .card{
+      width:100%;
+      max-width:500px;
+      background:#fff;
+      border-radius:20px;
+      padding:30px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    h2{
+      margin-bottom:20px;
+      font-size:22px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .form-group{
+      margin-bottom:15px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    label{
+      font-size:14px;
+      margin-bottom:6px;
+      color:#374151;
+    }
+
+    input{
+      padding:12px;
+      border:1px solid #d1d5db;
+      border-radius:12px;
+      outline:none;
+      font-size:15px;
+    }
+
+    input:focus{
+      border-color:#16a34a;
+    }
+
+    .btn{
+      width:100%;
+      padding:12px;
+      border:none;
+      border-radius:12px;
+      background:#16a34a;
+      color:#fff;
+      font-weight:600;
+      cursor:pointer;
+      margin-top:10px;
+    }
+
+    .btn:hover{
+      background:#12803a;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+
+    <h2>
+      <i class="ri-user-add-line"></i>
+      Créer votre profil citoyen
+    </h2>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label>Quartier</label>
+        <input type="text" name="quartier" placeholder="Ex: Bonanjo" required>
+      </div>
+
+      <div class="form-group">
+        <label>Adresse</label>
+        <input type="text" name="adresse" placeholder="Ex: Rue 123" required>
+      </div>
+
+      <button type="submit" class="btn">
+        Enregistrer
+      </button>
+
+    </form>
+
+  </div>
+
+</body>
+</html>

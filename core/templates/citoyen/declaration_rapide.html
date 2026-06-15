@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Déclaration rapide</title>
+
+  <!-- Google Font & Icons pour matcher parfaitement avec ton Dashboard -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+
+  <style>
+    /* 1. RESET & GLOBALS */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: rgba(15, 23, 42, 0.6); /* Effet fond de dashboard assombri */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* 2. LAYOUT / CONTAINER COMPACT */
+    .modal {
+      width: 100%;
+      max-width: 650px;
+      max-height: 90vh;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #f3f4f6;
+    }
+
+    /* 3. SECTION D'EN-TÊTE */
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .title-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .camera-icon {
+      color: #16a34a;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .close-btn {
+      border: none;
+      background: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: #9ca3af;
+      transition: color 0.2s ease;
+      display: flex;
+      align-items: center;
+    }
+
+    .close-btn:hover {
+      color: #ef4444;
+    }
+
+    /* 4. CONTENU ET CHAMPS DE FORMULAIRE */
+    .content {
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .col {
+      flex: 1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      height: 42px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 0 14px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+      color: #111827;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+
+    textarea {
+      height: 75px;
+      resize: none;
+      padding-top: 10px;
+    }
+
+    textarea::placeholder {
+      color: #9ca3af;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #f3f4f6;
+      margin: 20px 0;
+    }
+
+    /* 5. SECTIONS SPÉCIFIQUES (PHOTO & GEO) */
+    .photo-section {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .photo-box {
+      width: 64px;
+      height: 64px;
+      border-radius: 10px;
+      background: #f9fafb;
+      border: 2px dashed #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #9ca3af;
+      overflow: hidden;
+    }
+
+    .photo-btn {
+      height: 38px;
+      padding: 0 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #374151;
+      transition: background 0.2s ease;
+    }
+
+    .photo-btn:hover {
+      background: #f9fafb;
+    }
+
+    .location-btn {
+      height: 42px;
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s ease;
+    }
+
+    .location-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-group input {
+      width: 16px;
+      height: 16px;
+      accent-color: #16a34a;
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      font-size: 13px;
+      color: #4b5563;
+      margin: 0;
+      font-weight: 400;
+      cursor: pointer;
+    }
+
+    /* 6. BOUTONS ACTION RETRAVAILLÉS */
+    .footer-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .actions-box {
+      display: flex;
+      gap: 10px;
+    }
+
+    .cancel-btn {
+      height: 40px;
+      padding: 0 20px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #4b5563;
+      transition: all 0.2s ease;
+    }
+
+    .cancel-btn:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    .submit-btn {
+      height: 40px;
+      padding: 0 24px;
+      border: none;
+      border-radius: 10px;
+      background: #16a34a;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .submit-btn:hover {
+      background: #15803d;
+    }
+  </style>
+</head>
+<body>
+<!-- 1. L'action "." force le formulaire à poster sur la vue actuelle (ton Dashboard) -->
+<form method="POST" action="." enctype="multipart/form-data" class="modal">
+  {% csrf_token %}
+
+  <!-- En-tête de ta modal... -->
+  <div class="modal-header"> ... </div>
+
+  <div class="content">
+
+    <!-- 2. Vérifie le select du type de déchet -->
+    <div class="form-group">
+      <label>Type de déchet *</label>
+      <select name="type_dechet" required>
+        <option value="">Sélectionnez le type de déchet</option>
+        <option value="plastique">Plastique</option>
+        <option value="verre">Verre</option>
+        <option value="papier">Papier / Carton</option>
+        <option value="organique">Organique</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <!-- 3. IMPORTANT : name="quantite" (Lu par request.POST.get('quantite') dans views.py) -->
+      <div class="col form-group">
+        <label>Quantité *</label>
+        <input type="number" step="0.1" name="quantite" placeholder="Ex: 4.5" required>
+      </div>
+
+      <div class="col form-group">
+        <label>Unité</label>
+        <select name="unite">
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- 4. IMPORTANT : name="photo_dechet" pour l'upload d'image -->
+      <div class="col form-group">
+        <label>Photo des déchets *</label>
+        <div class="photo-section">
+          <div class="photo-box" id="photoPreview">
+            <i class="ri-camera-line"></i>
+          </div>
+          <input type="file" name="photo_dechet" id="photoFile" accept="image/*" style="display: none;" required>
+          <button type="button" class="photo-btn" onclick="document.getElementById('photoFile').click()">
+            Choisir une photo
+          </button>
+        </div>
+      </div>
+      ...
+    </div>
+
+    ...
+
+    <!-- 5. Le bouton d'envoi doit impérativement être de type submit -->
+    <div class="actions-box">
+      <button type="button" class="cancel-btn" onclick="closeModal()">Annuler</button>
+      <button type="submit" class="submit-btn">Envoyer</button>
+    </div>
+  </div>
+</form>
+
+  <!-- LE SCRIPT JS CORRIGÉ -->
+  <script>
+    document.getElementById('photoFile').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+          const previewBox = document.getElementById('photoPreview');
+          // Remplacement propre du contenu par la balise image fluide
+          previewBox.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+          previewBox.style.borderStyle = 'solid'; // Change le style pointillé
+        };
+
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+</body>
+</html>

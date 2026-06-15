@@ -1,0 +1,21 @@
+{% extends 'base_citoyen.html' %}
+
+{% block content %}
+<h3 class="mb-4">Boutique de récompenses</h3>
+<div class="row">
+    {% for offre in offres %}
+    <div class="col-md-4">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ offre.nom }}</h5>
+                <p class="card-text text-muted">{{ offre.description }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-info text-dark">{{ offre.cout_en_points }} Points</span>
+                    <a href="{% url 'echanger_points' offre.id %}" class="btn btn-sm btn-primary">Échanger</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

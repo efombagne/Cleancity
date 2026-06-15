@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}EcoCollect — Espace Citoyen{% endblock %}</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #16a34a; --primary-dark: #15803d;
+      --bg: #f8fafc; --white: #ffffff;
+      --text: #1e293b; --muted: #64748b;
+      --border: #e2e8f0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+    /* --- SIDEBAR PREMIUM --- */
+    .sidebar { width: 260px; background: var(--white); border-right: 1px solid var(--border); position: fixed; height: 100vh; padding: 24px; display: flex; flex-direction: column; z-index: 100; }
+    .profile { display:flex; align-items:center; gap:12px; margin-bottom:40px; }
+    .avatar { width: 45px; height: 45px; border-radius: 12px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.2); }
+
+    .menu-group { margin-bottom: 24px; }
+    .menu-label { font-size: 10px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
+    .menu-item { text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--muted); font-weight: 500; font-size: 14px; transition: 0.3s; margin-bottom: 4px; }
+    .menu-item:hover { background: #f1f5f9; color: var(--primary); }
+    .menu-item.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); }
+    .menu-item.active i { color: white; }
+
+    /* --- MAIN CONTENT --- */
+    .main-content { margin-left: 260px; padding: 32px; width: calc(100% - 260px); }
+    .content-wrapper { max-width: 1200px; margin: 0 auto; }
+
+    /* --- HERO REFINÉ --- */
+    .hero { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 40px; border-radius: 28px; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.3); }
+    .hero h1 { font-size: 28px; font-weight: 600; margin-bottom: 8px; }
+    .hero-badge { background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); padding: 12px 20px; border-radius: 16px; font-weight: 600; }
+
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+
+  {% if user.is_authenticated %}
+  <aside class="sidebar">
+    <div class="profile">
+      <div class="avatar">{{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}</div>
+      <div>
+        <h4 style="font-size: 14px; font-weight: 600;">{{ request.user.get_full_name }}</h4>
+        <span style="font-size: 11px; color: var(--muted);">Citoyen</span>
+      </div>
+    </div>
+
+    <nav>
+      <div class="menu-group">
+        <div class="menu-label">Menu Principal</div>
+         <a href="{% url 'core:welcome' %}" class="menu-item"><i class="ri-history-line"></i> Accuiel</a>
+        <a href="{% url 'collecteur:dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="ri-dashboard-line"></i> Dashboard</a>
+        <a href="{% url 'collecteur:selection_dechets' %}" class="menu-item"><i class="ri-add-circle-line"></i> gerer une collecte</a>
+        <a href="{% url 'core:mes_declarations' %}" class="menu-item"><i class="ri-archive-line"></i> </a>
+        <a href="{% url 'core:historique' %}" class="menu-item"><i class="ri-history-line"></i> Historique</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="menu-label">Compte</div>
+        <a href="" class="menu-item"><i class="ri-user-line"></i> Mon profil</a>
+      </div>
+    </nav>
+
+    <div style="margin-top: auto;">
+      <a href="#" style="color: #ef4444; text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px; display: flex; align-items: center; gap: 12px;">
+        <i class="ri-logout-box-line"></i> Déconnexion
+      </a>
+    </div>
+  </aside>
+  {% endif %}
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <section class="hero">
+        <div>
+          <h1>Bonjour, {{ request.user.first_name }} 👋</h1>
+          <p style="opacity: 0.9;">Gérez vos déchets et suivez votre impact écologique.</p>
+        </div>
+        <div class="hero-badge">♻️ {{ total_poids|default:"0" }} kg recyclés</div>
+      </section>
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</body>
+</html>

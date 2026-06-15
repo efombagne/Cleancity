@@ -1,0 +1,112 @@
+{% extends 'citoyen/base_citoyen.html' %}
+
+{% block content %}
+<div class="form-overlay">
+    <div class="form-container">
+        <div class="form-header">
+            <div class="form-title">
+                <i class="ri-recycle-line"></i>
+                <h2>Nouvelle déclaration</h2>
+            </div>
+            <p>Remplissez les détails pour planifier votre collecte.</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-body">
+                <div class="form-group">
+                    <label>Type de déchet *</label>
+                    <select name="type" required>
+                        <option value="">Sélectionnez le type</option>
+                        <option value="plastique">Plastique</option>
+                        <option value="verre">Verre</option>
+                        <option value="carton">Carton</option>
+                        <option value="metal">Métal</option>
+                    </select>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Quantité *</label>
+                        <input type="number" name="poids" placeholder="Ex: 5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unité *</label>
+                        <select name="unite">
+                            <option value="kg">Kilogrammes (kg)</option>
+                            <option value="g">Grammes (g)</option>
+                            <option value="t">Tonnes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Localisation</label>
+                        <input type="text" name="localisation" placeholder="Votre adresse...">
+                    </div>
+                    <div class="form-group">
+                        <label>Date souhaitée</label>
+                        <input type="date" name="date">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Photo (Optionnel)</label>
+                    <input type="file" name="image" accept="image/*" class="file-input">
+                </div>
+
+                <div class="form-group">
+                    <label>Notes complémentaires</label>
+                    <textarea name="notes" rows="3" placeholder="Informations utiles pour le collecteur..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-footer">
+                <a href="{% url 'core:dashboard' %}" class="btn btn-cancel">Annuler</a>
+                <button type="submit" class="btn btn-save">Enregistrer la demande</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-overlay {
+        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(8px); display: flex; justify-content: center;
+        align-items: center; padding: 20px; z-index: 9999;
+    }
+
+    .form-container {
+        width: 100%; max-width: 650px; background: #fff;
+        border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    .form-header { padding: 24px 32px; border-bottom: 1px solid #f1f5f9; }
+    .form-header h2 { margin: 0; font-size: 1.5rem; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+    .form-header p { margin: 5px 0 0; color: #64748b; font-size: 0.9rem; }
+
+    .form-body { padding: 24px 32px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-group { margin-bottom: 16px; }
+
+    label { font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px; display: block; }
+    input, select, textarea {
+        width: 100%; padding: 12px; border: 1px solid #cbd5e1;
+        border-radius: 8px; font-size: 0.95rem; box-sizing: border-box;
+        transition: border-color 0.2s, ring 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+        outline: none; border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+
+    .form-footer { padding: 20px 32px; background: #f8fafc; display: flex; justify-content: flex-end; gap: 12px; }
+
+    .btn { padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; text-decoration: none; }
+    .btn-save { background: #16a34a; color: white; border: none; }
+    .btn-save:hover { background: #15803d; transform: translateY(-1px); }
+    .btn-cancel { background: #e2e8f0; color: #475569; border: none; }
+    .btn-cancel:hover { background: #cbd5e1; }
+</style>
+{% endblock %}

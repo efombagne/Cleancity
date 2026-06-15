@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoGest — Tableau de Bord Collecteur</title>
+
+  <style>
+    :root {
+      --primary: #38a169;
+      --primary-dark: #22543d;
+      --primary-light: #c6f6d5;
+      --bg-page: #f0fff4;
+      --text-sub: #4a5568;
+      --white: #ffffff;
+      --radius: 12px;
+      --font-display: 'Inter', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-display);
+      background: var(--bg-page);
+      color: var(--primary-dark);
+      line-height: 1.5;
+    }
+
+    /* === NAVIGATION === */
+    nav {
+      background: var(--primary);
+      padding: 0.8rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      position: sticky; top: 0; z-index: 1000;
+    }
+
+    /* Logo cliquable */
+    .nav-brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -0.03em;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .nav-brand em { color: #c6f6d5; font-style: normal; }
+
+    .nav-links { display: flex; gap: 25px; align-items: center; }
+    .nav-links a { color: #e6fffa; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; }
+    .nav-links a:hover { color: white; }
+
+    .badge-role {
+      background: rgba(255,255,255,0.2);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .container { max-width: 1200px; margin: 2rem auto; padding: 0 20px; }
+
+    /* === STATISTIQUES === */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 2.5rem;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 2px solid var(--primary-light);
+      padding: 20px;
+      border-radius: var(--radius);
+    }
+    .stat-label { font-size: 11px; color: var(--text-sub); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-value { font-size: 2rem; font-weight: 800; color: var(--primary-dark); margin: 5px 0; }
+
+    /* === KANBAN === */
+    .kanban-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+    }
+    .kanban-col {
+      background: rgba(255,255,255,0.5);
+      border: 2px solid var(--primary-light);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      min-height: 500px;
+    }
+    .kanban-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; border-bottom: 2px solid var(--primary-light);
+      padding-bottom: 12px;
+    }
+    .col-name { font-weight: 800; font-size: 13px; text-transform: uppercase; display: flex; align-items: center; }
+    .count-badge { background: var(--primary-dark); color: white; padding: 2px 8px; border-radius: 20px; font-size: 11px; }
+
+    /* === CARDS === */
+    .collecte-card {
+      background: var(--white);
+      border: 2px solid var(--primary-light);
+      padding: 18px;
+      border-radius: var(--radius);
+      margin-bottom: 15px;
+      transition: 0.2s;
+    }
+    .collecte-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
+    .collecte-card h4 { margin: 0 0 8px 0; font-size: 15px; color: var(--primary-dark); }
+    .collecte-card p { margin: 4px 0; font-size: 13px; color: var(--text-sub); }
+
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+    .bg-plan { background: #ecc94b; }
+    .bg-conf { background: var(--primary); }
+    .bg-done { background: #cbd5e0; }
+
+    .btn {
+      padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 13px;
+      cursor: pointer; text-decoration: none; display: inline-block; text-align: center;
+      transition: 0.2s; border: none; width: 100%; margin-top: 12px;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-outline { background: var(--white); color: var(--primary); border: 2px solid var(--primary-light); }
+
+    /* === VUE LISTE === */
+    #listView { display: none; }
+    .table-wrap { background: var(--white); border-radius: var(--radius); border: 2px solid var(--primary-light); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--primary-light); padding: 15px; font-size: 12px; text-align: left; }
+    td { padding: 15px; border-bottom: 1px solid var(--bg-page); font-size: 14px; }
+
+    /* TOGGLE BUTTONS */
+    .toggle-view { background: var(--primary-light); padding: 4px; border-radius: 10px; display: flex; gap: 4px; }
+    .toggle-btn { border: none; background: none; padding: 8px 15px; border-radius: 7px; cursor: pointer; font-weight: 700; }
+    .toggle-btn.active { background: var(--white); color: var(--primary); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="{% url 'core:home' %}" class="nav-brand">Clean<em>city</em></a>
+  <div class="nav-links">
+    <a href="{% url 'core:liste_collecteurs' %}" class="active">Tableau de Bord</a>
+     <span class="badge-role">🚛 Collecteur</span>
+    <a href="{% url 'core:liste_collecteurs' %}" class="active">carte</a>
+    <a href="{% url 'core:consulte' %}" class="active">historique</a>
+    <a href="{% url 'core:liste_collecteurs' %}" class="active">portefeuille</a>
+    <a href="{% url 'core:liste_collecteurs' %}" class="active">chat</a>
+    <a href="{% url 'core:liste_collecteurs' %}" class="active">profil</a>
+
+    <a href="{% url 'core:logout' %}">Déconnexion</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Missions</div>
+      <div class="stat-value">{{ total_count }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">En attente / Planifiées</div>
+      <div class="stat-value" style="color: #d69e2e;">{{ planifiees_count }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">En cours</div>
+      <div class="stat-value" style="color: var(--primary);">{{ confirmees_count }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Terminées</div>
+      <div class="stat-value" style="color: #718096;">{{ terminees_count }}</div>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="font-size: 1.8rem; margin: 0;">Suivi des tournées</h1>
+    <div style="display: flex; gap: 15px;">
+        <a href="{% url 'core:collecte_form' %}" class="btn-primary" style="padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 700;">+ Nouvelle Collecte</a>
+        <div class="toggle-view">
+            <button class="toggle-btn active" id="btn-kanban">Kanban</button>
+            <button class="toggle-btn" id="btn-list">Liste</button>
+        </div>
+    </div>
+  </div>
+
+  {% if collectes %}
+  <div id="kanbanView" class="kanban-container">
+    <div class="kanban-col">
+      <div class="kanban-header">
+        <span class="col-name"><span class="status-dot bg-plan"></span> Planifiées / Attente</span>
+        <span class="count-badge">{{ planifiees_count }}</span>
+      </div>
+      {% for c in collectes_planifiees %}
+      <div class="collecte-card">
+        <h4>{{ c.get_type_principal_display|default:"Collecte de déchets" }}</h4>
+        <p>📍 {{ c.itineraire|truncatechars:40 }}</p>
+        <p>📅 {{ c.date|date:"d/m/Y" }}</p>
+        <a href="{% url 'core:planifier_collecte' c.pk %}" class="btn btn-primary">Démarrer la mission</a>
+      </div>
+      {% empty %}
+      <p style="text-align:center; color: #a0aec0; margin-top: 30px; font-size: 13px;">Rien à planifier</p>
+      {% endfor %}
+    </div>
+
+    <div class="kanban-col">
+      <div class="kanban-header">
+        <span class="col-name"><span class="status-dot bg-conf"></span> Confirmées / En cours</span>
+        <span class="count-badge">{{ confirmees_count }}</span>
+      </div>
+      {% for c in collectes_confirmees %}
+      <div class="collecte-card">
+        <h4>{{ c.get_type_principal_display }}</h4>
+        <p>📍 {{ c.itineraire|truncatechars:40 }}</p>
+        <p>👤 Assigné à : {{ c.collecteur.username }}</p>
+        <a href="{% url 'core:valider' c.pk %}" class="btn btn-outline">Valider le dépôt</a>
+      </div>
+      {% empty %}
+      <p style="text-align:center; color: #a0aec0; margin-top: 30px; font-size: 13px;">Aucune mission en cours</p>
+      {% endfor %}
+    </div>
+
+    <div class="kanban-col">
+      <div class="kanban-header">
+        <span class="col-name"><span class="status-dot bg-done"></span> Terminées</span>
+        <span class="count-badge">{{ terminees_count }}</span>
+      </div>
+      {% for c in collectes_terminees %}
+      <div class="collecte-card" style="opacity: 0.7; border-style: dashed;">
+        <h4>{{ c.get_type_principal_display }}</h4>
+        <p>✅ Terminée le {{ c.date|date:"d/m/Y" }}</p>
+        <p>📍 {{ c.itineraire|truncatechars:40 }}</p>
+      </div>
+      {% empty %}
+      <p style="text-align:center; color: #a0aec0; margin-top: 30px; font-size: 13px;">Aucun historique</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div id="listView">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#ID</th>
+            <th>STATUT</th>
+            <th>CATÉGORIE</th>
+            <th>ITINÉRAIRE / LIEU</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in collectes %}
+          <tr>
+            <td><strong>#{{ c.pk }}</strong></td>
+            <td>
+                {% if c.statut == "En attente" or c.statut == "Planifiée" %}
+                    <span class="status-dot bg-plan"></span> {{ c.statut }}
+                {% elif c.statut == "Confirmée" %}
+                    <span class="status-dot bg-conf"></span> Confirmée
+                {% else %}
+                    <span class="status-dot bg-done"></span> Terminée
+                {% endif %}
+            </td>
+            <td>{{ c.get_type_principal_display|default:"Non spécifié" }}</td>
+            <td>{{ c.itineraire|truncatechars:60 }}</td>
+            <td><a href="{% url 'core:consulte' %}" class="btn-outline" style="padding: 5px 10px; border-radius: 5px; font-size: 12px; text-decoration: none;">Détails</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% else %}
+  <div style="text-align: center; padding: 80px; background: white; border-radius: 20px; border: 2px dashed var(--primary-light);">
+    <div style="font-size: 40px;">🚚</div>
+    <h3>Aucune collecte enregistrée</h3>
+    <p>Utilisez le bouton "Nouvelle Collecte" pour commencer.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  const btnKanban = document.getElementById('btn-kanban');
+  const btnList = document.getElementById('btn-list');
+  const kanban = document.getElementById('kanbanView');
+  const list = document.getElementById('listView');
+
+  btnKanban.onclick = () => {
+    kanban.style.display = 'grid';
+    list.style.display = 'none';
+    btnKanban.classList.add('active');
+    btnList.classList.remove('active');
+  };
+
+  btnList.onclick = () => {
+    kanban.style.display = 'none';
+    list.style.display = 'block';
+    btnList.classList.add('active');
+    btnKanban.classList.remove('active');
+  };
+</script>
+
+</body>
+</html>

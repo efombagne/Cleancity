@@ -1,0 +1,104 @@
+{% extends 'base_collecte.html' %}
+
+{% block content %}
+<style>
+    .collecte-layout { display: grid; grid-template-columns: 1fr 320px; gap: 30px; align-items: start; }
+
+    /* Carte de sélection */
+    .dechet-list { display: flex; flex-direction: column; gap: 12px; }
+    .dechet-card {
+        display: flex; align-items: center; justify-content: space-between;
+        background: white; padding: 16px 20px; border-radius: 12px;
+        border: 1px solid #e2e8f0; transition: all 0.2s;
+    }
+    .dechet-card:hover { border-color: #16a34a; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .dechet-info { font-weight: 500; color: #334155; }
+
+    /* Stats Sidebar */
+    .stats-sidebar {
+        background: white; padding: 25px; border-radius: 16px;
+        border: 1px solid #e2e8f0; position: sticky; top: 20px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+    .poids-bar { width: 100%; height: 12px; background: #f1f5f9; border-radius: 6px; margin: 15px 0; overflow: hidden; }
+    .poids-bar-fill { height: 100%; background: #16a34a; transition: width 0.4s ease; }
+
+    .btn-submit {
+        width: 100%; padding: 14px; background: #16a34a; color: white;
+        border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+        margin-top: 20px; transition: background 0.2s;
+    }
+    .btn-submit:hover { background: #15803d; }
+</style>
+
+<div class="collecte-layout">
+    <form method="POST" id="collecte-form">
+        {% csrf_token %}
+        <div class="dechet-list">
+            <h2 style="margin-bottom: 10px;">Déchets à collecter</h2>
+            {% for d in dechets_disponibles %}
+            <label class="dechet-card">
+                <div>
+                    <span style="color: #64748b; font-size: 12px;">#{{ d.id }}</span>
+                    <div class="dechet-info">{{ d.type }}</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-weight: 700; color: #16a34a;">{{ d.poids }} kg</span>
+                    <input type="checkbox" name="dechets" value="{{ d.id }}" data-poids="{{ d.poids }}" class="dechet-check" style="width: 20px; height: 20px;">
+                </div>
+            </label>
+            {% empty %}
+            <p style="color: #64748b;">Aucun déchet en attente actuellement.</p>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn-submit">Finaliser la tournée</button>
+    </form>
+
+    <div class="stats-sidebar">
+        <div style="margin-bottom: 25px; padding: 15px; background: #fff7ed; border-radius: 12px; border: 1px solid #ffedd5;">
+            <h4 style="margin: 0; color: #9a3412; font-size: 13px; text-transform: uppercase;">Collectes en attente</h4>
+            <div style="font-size: 24px; font-weight: 700; color: #ea580c;">{{ alertes_attente|default:"0" }}</div>
+        </div>
+
+        <h3 style="margin-top: 0;">Progression du camion</h3>
+        <div style="font-size: 24px; font-weight: 700; color: #1e293b;" id="poids-text">0 kg / 500 kg</div>
+        <div class="poids-bar"><div id="poids-fill" class="poids-bar-fill" style="width: 0%;"></div></div>
+        <p style="font-size: 13px; color: #64748b;">Capacité maximale autorisée par tournée.</p>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.dechet-check').forEach(c => {
+        c.addEventListener('change', () => {
+            let total = 0;
+            const btnSubmit = document.querySelector('.btn-submit');
+
+            // 1. Calcul du poids total
+            document.querySelectorAll('.dechet-check:checked').forEach(i => total += parseFloat(i.dataset.poids));
+
+            // 2. Mise à jour de l'affichage
+            const poidsText = document.getElementById('poids-text');
+            const poidsFill = document.getElementById('poids-fill');
+            poidsText.innerText = total + " kg / 500 kg";
+
+            let percent = (total / 500 * 100);
+            poidsFill.style.width = Math.min(percent, 100) + "%";
+
+            // 3. Logique dynamique : Bloquer le formulaire si > 500kg
+            if (total > 500) {
+                poidsFill.style.backgroundColor = '#dc2626'; // Rouge alerte
+                poidsText.style.color = '#dc2626';
+                btnSubmit.disabled = true;
+                btnSubmit.style.opacity = "0.5";
+                btnSubmit.innerText = "Capacité dépassée !";
+            } else {
+                poidsFill.style.backgroundColor = '#16a34a'; // Vert normal
+                poidsText.style.color = '#1e293b';
+                btnSubmit.disabled = false;
+                btnSubmit.style.opacity = "1";
+                btnSubmit.innerText = "Finaliser la tournée";
+            }
+        });
+    });
+</script>
+{% endblock %}

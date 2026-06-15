@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoGest — Mes Déchets</title>
+  <link rel="stylesheet" href="{% static 'base.css' %}">
+  <style>
+    .type-dot {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; margin-right: 6px;
+    }
+    .type-Plastique { background: #378ADD; }
+    .type-Verre    { background: #1D9E75; }
+    .type-Organique { background: #639922; }
+    .type-Métal   { background: var(--amber-400); }
+    .type-Papier  { background: #D4537E; }
+
+    .etat-badge { font-size: 11px; }
+    .actions-cell { display: flex; gap: 6px; }
+
+    .filter-bar {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.5rem;
+    }
+    .filter-btn {
+      font-size: 13px; font-weight: 500; padding: 6px 14px;
+      border-radius: 20px; border: 1px solid #e6ece0;
+      background: #fff; color: var(--gray-600); cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--green-50); border-color: var(--green-400); color: var(--green-800);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ======= NAV ======= -->
+<nav>
+  <div class="nav-brand">Eco<span>Gest</span></div>
+  <div class="nav-links">
+    <a href="{% url 'dechets_liste' %}" class="active">Mes déchets</a>
+    <a href="#">Notifications</a>
+    <span class="badge-role">🌱 Générateur</span>
+    <a href="{% url 'core:logout' %}" class="btn btn-secondary btn-sm">Déconnexion</a>
+  </div>
+</nav>
+
+<!-- ======= MAIN ======= -->
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total déchets</div>
+      <div class="stat-value">{{ dechets.count }}</div>
+      <div class="stat-hint">tous types confondus</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">En attente</div>
+      <div class="stat-value">{{ dechets|filter_etat:"en_attente"|length }}</div>
+      <div class="stat-hint">non encore collectés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Collectés</div>
+      <div class="stat-value">{{ dechets|filter_etat:"collecte"|length }}</div>
+      <div class="stat-hint">ce mois</div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mes déchets</h1>
+      <p class="page-subtitle">Déclarez et suivez vos déchets à collecter</p>
+    </div>
+    <a href="{% url 'dechet_create' %}" class="btn btn-primary">
+      + Déclarer un déchet
+    </a>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">Tous</button>
+    <button class="filter-btn" data-filter="en_attente">En attente</button>
+    <button class="filter-btn" data-filter="collecte">Collectés</button>
+    <button class="filter-btn" data-filter="traite">Traités</button>
+  </div>
+
+  <!-- Table -->
+  {% if dechets %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Poids (kg)</th>
+          <th>Localisation</th>
+          <th>État</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dechet in dechets %}
+        <tr>
+          <td>
+            <span class="type-dot type-{{ dechet.type }}"></span>
+            {{ dechet.type }}
+          </td>
+          <td><strong>{{ dechet.poids }}</strong> kg</td>
+          <td style="color: var(--gray-600);">{{ dechet.localisation }}</td>
+          <td>
+            {% if dechet.etat == 'en_attente' %}
+              <span class="badge badge-amber etat-badge">En attente</span>
+            {% elif dechet.etat == 'collecte' %}
+              <span class="badge badge-green etat-badge">Collecté</span>
+            {% elif dechet.etat == 'traite' %}
+              <span class="badge badge-gray etat-badge">Traité</span>
+            {% else %}
+              <span class="badge badge-gray etat-badge">{{ dechet.etat }}</span>
+            {% endif %}
+          </td>
+          <td style="color: var(--gray-400); font-size: 13px;">
+            {{ dechet.date_declaration|date:"d M Y" }}
+          </td>
+          <td>
+            <div class="actions-cell">
+              <a href="{% url 'dechet_detail' dechet.pk %}" class="btn btn-secondary btn-sm">Voir</a>
+              <a href="{% url 'dechet_update' dechet.pk %}" class="btn btn-secondary btn-sm">Modifier</a>
+              <a href="{% url 'dechet_delete' dechet.pk %}" class="btn btn-sm"
+                 style="color: var(--red-400); border-color: #f7c1c1; background:#fff;"
+                 onclick="return confirm('Supprimer ce déchet ?')">Supprimer</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div style="font-size: 48px;">🌱</div>
+    <p style="font-size: 16px; font-weight: 500; margin-top: 12px; color: #1a1f16;">Aucun déchet déclaré</p>
+    <p>Commencez par déclarer votre premier déchet à collecter.</p>
+    <a href="{% url 'dechet_create' %}" class="btn btn-primary" style="margin-top: 1.5rem;">
+      + Déclarer un déchet
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+  /* Simple client-side filter */
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      document.querySelectorAll('tbody tr').forEach(row => {
+        const etat = row.querySelector('.etat-badge');
+        if (!etat) return;
+        const txt = etat.textContent.trim().toLowerCase().replace(/\s/g, '_');
+        row.style.display = (filter === 'all' || txt.includes(filter)) ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

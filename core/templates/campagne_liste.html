@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoGest — Campagnes</title>
+  <link rel="stylesheet" href="{% static 'base.css' %}">
+  <style>
+    .campagne-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 1.5rem;
+    }
+    .campagne-card {
+      background: #fff;
+      border: 1px solid #e6ece0;
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .campagne-card:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+    .campagne-header {
+      padding: 1.25rem 1.25rem 0.75rem;
+      border-bottom: 1px solid #f0f3ec;
+    }
+    .campagne-type {
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--teal-600); margin-bottom: 8px;
+    }
+    .campagne-titre {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: 1.05rem; color: #1a1f16; letter-spacing: -0.02em;
+      line-height: 1.3; margin-bottom: 6px;
+    }
+    .campagne-desc {
+      font-size: 13px; color: var(--gray-600); line-height: 1.6;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .campagne-footer {
+      padding: 0.75rem 1.25rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .campagne-meta {
+      font-size: 12px; color: var(--gray-400);
+    }
+    .campagne-meta strong { color: var(--gray-600); }
+
+    .tabs {
+      display: flex; gap: 0; border-bottom: 1px solid #e6ece0;
+      margin-bottom: 1.5rem;
+    }
+    .tab {
+      padding: 10px 20px; font-size: 14px; font-weight: 500;
+      color: var(--gray-600); cursor: pointer; border: none;
+      background: transparent; border-bottom: 2px solid transparent;
+      font-family: var(--font-body); transition: color 0.15s, border-color 0.15s;
+      margin-bottom: -1px;
+    }
+    .tab.active { color: var(--green-600); border-bottom-color: var(--green-600); }
+    .tab:hover { color: var(--green-600); }
+
+    .color-bar {
+      height: 4px; width: 100%;
+    }
+    .bar-teal   { background: var(--teal-400); }
+    .bar-green  { background: var(--green-400); }
+    .bar-amber  { background: var(--amber-400); }
+
+    .search-bar {
+      display: flex; gap: 10px; margin-bottom: 1.5rem;
+    }
+    .search-bar input {
+      flex: 1; max-width: 320px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ======= NAV ======= -->
+<nav>
+  <div class="nav-brand">Eco<span>Gest</span></div>
+  <div class="nav-links">
+    <a href="{% url 'campagnes_liste' %}" class="active">Campagnes</a>
+    <a href="#">Traitements</a>
+    <a href="#">Statistiques</a>
+    <span class="badge-role">♻️ Centre</span>
+    <a href="{% url 'core:logout' %}" class="btn btn-secondary btn-sm">Déconnexion</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Campagnes totales</div>
+      <div class="stat-value">{{ campagnes.count }}</div>
+      <div class="stat-hint">toutes périodes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Actives</div>
+      <div class="stat-value">{{ campagnes|filter_statut:"active"|length }}</div>
+      <div class="stat-hint">en cours</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Publiées</div>
+      <div class="stat-value">{{ campagnes|filter_statut:"publiee"|length }}</div>
+      <div class="stat-hint">visibles au public</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Terminées</div>
+      <div class="stat-value">{{ campagnes|filter_statut:"terminee"|length }}</div>
+      <div class="stat-hint">archivées</div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Campagnes de sensibilisation</h1>
+      <p class="page-subtitle">Créez et publiez vos campagnes de sensibilisation à la gestion des déchets</p>
+    </div>
+    <a href="#" class="btn btn-primary">+ Nouvelle campagne</a>
+  </div>
+
+  <!-- Search + Filter -->
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Rechercher une campagne..." />
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="all">Toutes</button>
+    <button class="tab" data-tab="active">Actives</button>
+    <button class="tab" data-tab="publiee">Publiées</button>
+    <button class="tab" data-tab="terminee">Terminées</button>
+  </div>
+
+  <!-- Grid -->
+  {% if campagnes %}
+  <div class="campagne-grid" id="campagneGrid">
+    {% for campagne in campagnes %}
+    <div class="campagne-card" data-statut="{{ campagne.statut|lower }}" data-titre="{{ campagne.titre|lower }}">
+      <div class="color-bar {% cycle 'bar-teal' 'bar-green' 'bar-amber' %}"></div>
+      <div class="campagne-header">
+        <div class="campagne-type">{{ campagne.type|default:"Sensibilisation" }}</div>
+        <div class="campagne-titre">{{ campagne.titre }}</div>
+        <div class="campagne-desc">{{ campagne.description }}</div>
+      </div>
+      <div class="campagne-footer">
+        <div class="campagne-meta">
+          <strong>{{ campagne.date_debut|date:"d M Y" }}</strong>
+          {% if campagne.date_fin %} → {{ campagne.date_fin|date:"d M Y" }}{% endif %}
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          {% if campagne.statut == "publiee" %}
+            <span class="badge badge-green" style="font-size: 11px;">Publiée</span>
+          {% elif campagne.statut == "active" %}
+            <span class="badge badge-amber" style="font-size: 11px;">Active</span>
+          {% else %}
+            <span class="badge badge-gray" style="font-size: 11px;">{{ campagne.statut }}</span>
+          {% endif %}
+          <a href="{% url 'publier_campagne' campagne.pk %}" class="btn btn-primary btn-sm">
+            Publier
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div style="font-size: 48px;">♻️</div>
+    <p style="font-size: 16px; font-weight: 500; margin-top: 12px; color: #1a1f16;">Aucune campagne créée</p>
+    <p>Lancez votre première campagne de sensibilisation à la gestion des déchets.</p>
+    <a href="#" class="btn btn-primary" style="margin-top: 1.5rem;">+ Nouvelle campagne</a>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+  /* Tab filter */
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      filterCards();
+    });
+  });
+
+  /* Search */
+  document.getElementById('searchInput').addEventListener('input', filterCards);
+
+  function filterCards() {
+    const activeTab = document.querySelector('.tab.active').dataset.tab;
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.campagne-card').forEach(card => {
+      const statut = card.dataset.statut || '';
+      const titre  = card.dataset.titre  || '';
+      const tabMatch = activeTab === 'all' || statut.includes(activeTab);
+      const searchMatch = !query || titre.includes(query);
+      card.style.display = (tabMatch && searchMatch) ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>
