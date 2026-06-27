@@ -127,3 +127,9 @@ LOGIN_URL = 'collecteur:login'  # Remplacez 'core:login' par le nom de votre URL
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+DEBUG = False
+
+ALLOWED_HOSTS = [
+    'ton_nom.pythonanywhere.com'
+]

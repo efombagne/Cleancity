@@ -10,6 +10,11 @@ from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.db.models import Sum, Count
+from django.utils import timezone
+import json
+from django.db.models.functions import ExtractMonth
+from datetime import timedelta
 from .models import (
     Utilisateur,
     Citoyen,
@@ -204,52 +209,41 @@ class CitoyenDashboardView(LoginRequiredMixin, ListView):
 
     def post(self, request, *args, **kwargs):
         user = request.user
-
         if hasattr(user, "citoyen"):
             citoyen = user.citoyen
-
-            # 1. Ajustement ici avec les vrais noms de ton modèle : 'type' et 'poids'
             type_dechet = request.POST.get("type")
             poids = request.POST.get("poids")
             localisation = request.POST.get("localisation", "Position non spécifiée")
 
-            # Note: Si tu veux aussi enregistrer la photo et les notes (si tes champs existent en BDD)
-            # photo = request.FILES.get('photo_dechet')
-            # notes = request.POST.get('notes')
-
-            # 2. Sécurité : On vérifie que les éléments obligatoires sont là
             if type_dechet and poids:
                 Dechet.objects.create(
                     citoyen=citoyen,
-                    type=type_dechet,  # Utilise 'type' comme dans ta fonction
-                    poids=poids,  # Utilise 'poids' comme dans ta fonction
+                    type=type_dechet,
+                    poids=poids,
                     localisation=localisation,
                     etat="en_attente"
                 )
-
-        # 3. Redirection sur lui-même pour recharger la page proprement
         return redirect(request.path_info)
 
-    # Exemple dans ta vue views.py
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
 
-        # --- LOGIQUE COLLECTEUR (Protégée) ---
-        if hasattr(self.request.user, 'collecteur'):
-            collectes = Collecte.objects.filter(collecteur=self.request.user.collecteur)
+        # --- LOGIQUE COLLECTEUR ---
+        if hasattr(user, 'collecteur'):
+            collectes = Collecte.objects.filter(collecteur=user.collecteur)
             count_encours = collectes.filter(statut='en_cours').count()
             total = collectes.count()
             context['progression'] = (count_encours / total * 100) if total > 0 else 0
             context['count_encours'] = count_encours
         else:
-            # Valeurs par défaut si ce n'est pas un collecteur
             context['progression'] = 0
             context['count_encours'] = 0
 
-        # --- LOGIQUE CITOYEN (Protégée) ---
-        if hasattr(self.request.user, 'citoyen'):
-            mes_dechets = Dechet.objects.filter(citoyen=self.request.user.citoyen)
-            from django.db.models import Sum
+        # --- LOGIQUE CITOYEN ---
+        if hasattr(user, 'citoyen'):
+            citoyen = user.citoyen
+            mes_dechets = Dechet.objects.filter(citoyen=citoyen)
             poids_total = mes_dechets.aggregate(Sum('poids'))['poids__sum'] or 0
 
             context['total_declarations'] = mes_dechets.count()
@@ -257,17 +251,48 @@ class CitoyenDashboardView(LoginRequiredMixin, ListView):
             context['total_dechets'] = mes_dechets.count()
             context['co2_economise'] = round(poids_total * 2.5, 1)
             context['arbres_sauves'] = round(poids_total * 0.015)
+
+            # --- DONNÉES GRAPHIQUES (Corrigées pour MySQL) ---
+            # --- DONNÉES POUR LES 3 GRAPHIQUES ---
+            if hasattr(user, 'citoyen'):
+                mes_dechets = Dechet.objects.filter(citoyen=user.citoyen)
+
+                # 1. Graphique Circulaire (Doughnut) : Répartition par TYPE de déchet
+                stats_types = mes_dechets.values('type').annotate(total=Sum('poids'))
+                context['chart_labels_types'] = json.dumps([s['type'] for s in stats_types])
+                context['chart_values_types'] = json.dumps([float(s['total']) for s in stats_types])
+
+                # 2. Graphique en Courbe (Line) : Évolution du poids par MOIS
+                six_months_ago = timezone.now() - timedelta(days=180)
+                stats_evo = mes_dechets.filter(date_creation__gte=six_months_ago) \
+                    .annotate(month=ExtractMonth('date_creation')) \
+                    .values('month').annotate(total=Sum('poids')).order_by('month')
+                context['chart_labels_evo'] = json.dumps([f"Mois {s['month']}" for s in stats_evo])
+                context['chart_values_evo'] = json.dumps([float(s['total']) for s in stats_evo])
+
+                # 3. Graphique en Barres (Bar) : Nombre de déclarations par ÉTAT
+                stats_etat = mes_dechets.values('etat').annotate(count=Count('id'))
+                context['chart_labels_etat'] = json.dumps([s['etat'] for s in stats_etat])
+                context['chart_values_etat'] = json.dumps([int(s['count']) for s in stats_etat])
+
+            # Utilisation de ExtractMonth pour une compatibilité parfaite avec MySQL
+            stats_evo = mes_dechets.filter(date_creation__gte=six_months_ago) \
+                .annotate(month=ExtractMonth('date_creation')) \
+                .values('month') \
+                .annotate(total=Sum('poids')) \
+                .order_by('month')
+
+            context['chart_labels_evo'] = json.dumps([s['month'] for s in stats_evo])
+            context['chart_values_evo'] = json.dumps([float(s['total']) for s in stats_evo])
         else:
-            context['total_declarations'] = 0
-            context['total_poids'] = 0
-            context['total_dechets'] = 0
-            context['co2_economise'] = 0
-            context['arbres_sauves'] = 0
+            context.update({
+                'total_declarations': 0, 'total_poids': 0, 'total_dechets': 0,
+                'co2_economise': 0, 'arbres_sauves': 0,
+                'chart_labels_types': '[]', 'chart_values_types': '[]',
+                'chart_labels_evo': '[]', 'chart_values_evo': '[]'
+            })
 
         return context
-
-
-
 
 class ProfilCitoyenView(LoginRequiredMixin, TemplateView):
     template_name = "citoyen/profil.html"
@@ -290,32 +315,24 @@ class HistoriqueCitoyenView(LoginRequiredMixin, ListView):
     model = Dechet
     template_name = "citoyen/historique.html"
     context_object_name = "tous_mes_dechets"
+    paginate_by = 10  # Nombre de lignes par page
 
     def get_queryset(self):
-        # 1. On récupère la base pour l'utilisateur
-        queryset = Dechet.objects.filter(citoyen=self.request.user.citoyen)
+        user = self.request.user
+        if not hasattr(user, "citoyen"):
+            return Dechet.objects.none()
 
-        # 2. On récupère les paramètres du formulaire
+        queryset = Dechet.objects.filter(citoyen=user.citoyen)
+
         query = self.request.GET.get('q')
         statut = self.request.GET.get('statut')
 
-        # 3. Filtrage dynamique
         if query:
             queryset = queryset.filter(Q(type__icontains=query) | Q(id__icontains=query))
-
         if statut:
             queryset = queryset.filter(etat=statut)
 
         return queryset.order_by("-date_creation")
-
-    def get_queryset(self):
-        user = self.request.user
-        if hasattr(user, "citoyen"):
-            # On récupère TOUT l'historique du plus récent au plus ancien
-            return Dechet.objects.filter(citoyen=user.citoyen).order_by("-id")
-        return Dechet.objects.none()
-
-
 
 @login_required
 def creer_citoyen(request):
@@ -367,35 +384,57 @@ class CollecteurDashboardView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # On définit le collecteur une seule fois pour alléger le code
-        collecteur = self.request.user.collecteur
 
-        # 1. Statistiques globales
-        stats = Collecte.objects.filter(collecteur=collecteur).aggregate(
-            total_collectes=Count('id'),
-            total_dechets=Sum('dechets__poids')
-        )
+        # Sécurité : Vérifier si l'utilisateur est bien un collecteur avant d'accéder à .collecteur
+        if hasattr(self.request.user, 'collecteur'):
+            collecteur = self.request.user.collecteur
+            collectes = Collecte.objects.filter(collecteur=collecteur)
 
-        # 2. Collectes en attente (Alertes)
-        en_attente = Collecte.objects.filter(collecteur=collecteur, statut='en_attente').count()
+            # 1. Statistiques globales
+            stats = collectes.aggregate(
+                total_collectes=Count('id'),
+                total_dechets=Sum('dechets__poids')
+            )
 
-        # 3. Statistiques dynamiques pour le bloc "En cours"
-        collectes_toutes = Collecte.objects.filter(collecteur=collecteur)
-        count_encours = collectes_toutes.filter(statut='en_cours').count()
-        total_active = collectes_toutes.count()
+            # 2. Collectes en attente (Alertes)
+            en_attente = collectes.filter(statut='en_attente').count()
 
-        # Calcul du pourcentage de progression
-        progression = (count_encours / total_active * 100) if total_active > 0 else 0
+            # 3. Statistiques pour la barre de progression
+            count_encours = collectes.filter(statut='en_cours').count()
+            total_active = collectes.count()
+            progression = (count_encours / total_active * 100) if total_active > 0 else 0
 
-        # Mise à jour du contexte
-        context.update({
-            'total_collectes': stats['total_collectes'] or 0,
-            'total_volume': stats['total_dechets'] or 0,
-            'alertes_attente': en_attente,
-            'count_encours': count_encours,  # Ajout pour le template
-            'progression': round(progression, 1),  # Ajout pour la barre HTML
-            'progression_mois': self.calculer_progression()
-        })
+            # 4. Analyse des déchets recyclés par mois (pour le graphique)
+            data_mensuelle = collectes.filter(statut='termine').annotate(
+                mois=ExtractMonth('date')
+            ).values('mois').annotate(
+                total_poids=Sum('dechets__poids')
+            ).order_by('mois')
+
+            # Préparation des données pour le JS (12 mois)
+            mois_noms = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc']
+            labels_mensuels = [mois_noms[d['mois'] - 1] for d in data_mensuelle]
+            values_mensuels = [float(d['total_poids'] or 0) for d in data_mensuelle]
+
+            # Mise à jour du contexte
+            context.update({
+                'total_collectes': stats['total_collectes'] or 0,
+                'total_volume': round(stats['total_dechets'] or 0, 2),
+                'alertes_attente': en_attente,
+                'count_encours': count_encours,
+                'progression': round(progression, 1),
+                # Données pour le nouveau graphique
+                'labels_mensuels': json.dumps(labels_mensuels),
+                'values_mensuels': json.dumps(values_mensuels),
+            })
+        else:
+            # Valeurs par défaut si aucun profil collecteur n'est trouvé
+            context.update({
+                'total_collectes': 0, 'total_volume': 0, 'alertes_attente': 0,
+                'count_encours': 0, 'progression': 0,
+                'labels_mensuels': json.dumps([]), 'values_mensuels': json.dumps([])
+            })
+
         return context
 
     def calculer_progression(self):

@@ -1,11 +1,17 @@
 {% extends 'base_collecte.html' %}
 
 {% block content %}
+
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 <style>
     /* Structure du Dashboard */
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
     .kpi-card { background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .kpi-card .value { font-size: 28px; font-weight: 700; color: #16a34a; }
+
+    /* Grille Graphiques */
+    .charts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; }
+    .chart-card { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 
     /* Barre d'action */
     .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -13,13 +19,34 @@
     .btn-add:hover { background: #15803d; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3); }
 
     /* Tableau */
-    .table-container { background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .table-container { background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 30px; }
     table { width: 100%; border-collapse: collapse; }
     th { background: #f8fafc; padding: 16px; font-size: 12px; text-transform: uppercase; color: #64748b; text-align: left; }
     td { padding: 16px; border-top: 1px solid #f1f5f9; }
-    .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; background: #dcfce7; color: #15803d; font-weight: 600; }
+    .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+
+    @media (max-width: 1024px) { .charts-grid { grid-template-columns: 1fr; } }
+    /* Effet hover sur les cartes de graphiques */
+.chart-card {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chart-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+}
+
+/* Rendre le canvas plus grand à l'intérieur de sa carte */
+.chart-card canvas {
+    max-height: 250px !important;
+}
 </style>
 
+<!-- KPI -->
 <div class="dashboard-grid">
     <div class="kpi-card">
         <h3>Volume Total</h3>
@@ -31,11 +58,27 @@
     </div>
 </div>
 
+<!-- Graphiques -->
+<div class="charts-grid">
+    <div class="chart-card">
+        <h3 style="font-size: 14px; margin-bottom: 15px;">Évolution Mensuelle</h3>
+        <canvas id="lineChart" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3 style="font-size: 14px; margin-bottom: 15px;">Types de Déchets</h3>
+        <canvas id="barChart" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3 style="font-size: 14px; margin-bottom: 15px;">Statut des Collectes</h3>
+        <canvas id="pieChart" height="200"></canvas>
+    </div>
+</div>
+
+
+<!-- Liste -->
 <div class="action-bar">
-    <h2 style="color: var(--text);">Dernières collectes</h2>
-    <a href="{% url 'collecteur:selection_dechets' %}" class="btn-add">
-        <i class="ri-add-line"></i> Ajouter une nouvelle collecte
-    </a>
+    <h2 style="color: #1e293b;">Dernières collectes</h2>
+
 </div>
 
 <div class="table-container">
@@ -48,39 +91,85 @@
                 <th>Action</th>
             </tr>
         </thead>
-       <tbody>
+        <tbody>
             {% for c in collectes_recentes %}
             <tr>
                 <td>{{ c.date|date:"d M Y" }}</td>
-               <td>
-    {% if c.dechets.all %}
-        {{ c.dechets.all.0.get_type_display|default:"Type inconnu" }}
-        {% if c.dechets.count > 1 %}(+ {{ c.dechets.count|add:"-1" }} autre){% endif %}
-    {% else %}
-        Non classé
-    {% endif %}
-</td>
                 <td>
-                    <span class="badge" style="
-                        background: {% if c.statut == 'termine' %}#dcfce7{% elif c.statut == 'en_attente' %}#fee2e2{% else %}#fef9c3{% endif %};
-                        color: {% if c.statut == 'termine' %}#15803d{% elif c.statut == 'en_attente' %}#991b1b{% else %}#854d0e{% endif %};">
+                    {% if c.dechets.all %}
+                        {{ c.dechets.all.0.get_type_display|default:"Type inconnu" }}
+                        {% if c.dechets.count > 1 %}(+ {{ c.dechets.count|add:"-1" }} autre){% endif %}
+                    {% else %} Non classé {% endif %}
+                </td>
+                <td>
+                    <span class="badge" style="background: {% if c.statut == 'termine' %}#dcfce7{% elif c.statut == 'en_attente' %}#fee2e2{% else %}#fef9c3{% endif %}; color: {% if c.statut == 'termine' %}#15803d{% elif c.statut == 'en_attente' %}#991b1b{% else %}#854d0e{% endif %};">
                         {{ c.get_statut_display|default:c.statut }}
                     </span>
                 </td>
                 <td>
-               <a href="{% url 'core:detail_declaration' c.id %}">
-                        <i class="ri-eye-line" style="color:#16a34a; font-size: 18px;"></i>
-                    </a>
+                    <a href="{% url 'core:detail_declaration' c.id %}"><i class="ri-eye-line" style="color:#16a34a; font-size: 18px;"></i></a>
                 </td>
             </tr>
             {% empty %}
-            <tr>
-                <td colspan="4" style="text-align:center; padding: 40px; color: #64748b;">
-                    Aucune collecte enregistrée pour le moment.
-                </td>
-            </tr>
+            <tr><td colspan="4" style="text-align:center; padding: 40px; color: #64748b;">Aucune collecte.</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Options communes pour un look pro
+        const options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        };
+
+        // 1. Graphique Évolution (Ligne)
+        new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: {{ chart_labels_evo|safe }},
+                datasets: [{
+                    label: 'Volume (kg)',
+                    data: {{ chart_values_evo|safe }},
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: options
+        });
+
+        // 2. Graphique Types (Barres)
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: {{ chart_labels_types|safe }},
+                datasets: [{
+                    label: 'Poids (kg)',
+                    data: {{ chart_values_types|safe }},
+                    backgroundColor: '#16a34a',
+                    borderRadius: 6
+                }]
+            },
+            options: options
+        });
+
+        // 3. Graphique Statuts (Circulaire)
+        new Chart(document.getElementById('pieChart'), {
+            type: 'doughnut',
+            data: {
+                labels: {{ chart_labels_statuts|safe }},
+                datasets: [{
+                    data: {{ chart_values_statuts|safe }},
+                    backgroundColor: ['#16a34a', '#ea580c', '#f59e0b']
+                }]
+            },
+            options: options
+        });
+    });
+</script>
 {% endblock %}

@@ -5,8 +5,11 @@ from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Sum
+from django.db.models import Sum,Count
 from django.urls import reverse_lazy
+import json
+from django.db.models.functions import ExtractMonth
+from datetime import datetime
 from django.views import View
 from django.views.generic import UpdateView, ListView, CreateView, TemplateView
 from django.shortcuts import redirect, render, get_object_or_404
@@ -80,7 +83,6 @@ def register_collecteur_view(request):
     return render(request, 'register.html')
 # =========================================================
 # DASHBOARD collecteur
-# =========================================================
 class CollecteurDashboardView(LoginRequiredMixin, TemplateView):
     template_name = "dashboard.html"
 
@@ -89,24 +91,58 @@ class CollecteurDashboardView(LoginRequiredMixin, TemplateView):
 
         if hasattr(self.request.user, 'collecteur'):
             collecteur = self.request.user.collecteur
+            collectes = Collecte.objects.filter(collecteur=collecteur)
 
-            # 1. Récupération des collectes
-            collectes = Collecte.objects.filter(collecteur=collecteur).order_by("-date")
-
-            # 2. Calcul du volume total
+            # 1. Statistiques KPI
             total_volume = collectes.aggregate(total=Sum('dechets__poids'))['total'] or 0
-
-            # 3. Calcul des alertes : UTILISEZ 'en_attente' (en minuscule)
-            # car c'est la valeur définie dans les choices de votre modèle
             alertes_attente = collectes.filter(statut='en_attente').count()
 
-            context['collectes_recentes'] = collectes[:10]
-            context['total_volume'] = total_volume
-            context['alertes_attente'] = alertes_attente
+            # 2. Données dynamiques : Types de déchets
+            # Note: remplacez 'dechets__type' par le nom réel du champ dans votre modèle
+            stats_types = collectes.values('dechets__type').annotate(total=Sum('dechets__poids'))
+            labels_types = [str(s['dechets__type'] or 'Autre') for s in stats_types]
+            values_types = [float(s['total'] or 0) for s in stats_types]
+
+            # 3. Données dynamiques : Évolution (les 6 derniers mois)
+            six_months_ago = timezone.now() - timezone.timedelta(days=180)
+            stats_evo = collectes.filter(date__gte=six_months_ago) \
+                .annotate(month=ExtractMonth('date')) \
+                .values('month').annotate(total=Sum('dechets__poids')).order_by('month')
+
+            # Conversion des numéros de mois en noms (ex: 1 -> Jan)
+            labels_evo = [datetime(2000, s['month'], 1).strftime('%b') for s in stats_evo]
+            values_evo = [float(s['total'] or 0) for s in stats_evo]
+
+            # 4. Données dynamiques : Statuts
+            stats_statuts = collectes.values('statut').annotate(count=Count('id'))
+            labels_statuts = [str(s['statut']) for s in stats_statuts]
+            values_statuts = [int(s['count']) for s in stats_statuts]
+
+            # Injection dans le contexte
+            context.update({
+                'collectes_recentes': collectes.order_by("-date")[:10],
+                'total_volume': round(total_volume, 2),
+                'alertes_attente': alertes_attente,
+                'chart_labels_types': json.dumps(labels_types),
+                'chart_values_types': json.dumps(values_types),
+                'chart_labels_evo': json.dumps(labels_evo),
+                'chart_values_evo': json.dumps(values_evo),
+                'chart_labels_statuts': json.dumps(labels_statuts),
+                'chart_values_statuts': json.dumps(values_statuts),
+            })
         else:
-            context['collectes_recentes'] = []
-            context['total_volume'] = 0
-            context['alertes_attente'] = 0
+            # Valeurs par défaut pour les utilisateurs sans profil collecteur
+            context.update({
+                'collectes_recentes': [],
+                'total_volume': 0,
+                'alertes_attente': 0,
+                'chart_labels_types': json.dumps([]),
+                'chart_values_types': json.dumps([]),
+                'chart_labels_evo': json.dumps([]),
+                'chart_values_evo': json.dumps([]),
+                'chart_labels_statuts': json.dumps([]),
+                'chart_values_statuts': json.dumps([]),
+            })
 
         return context
 

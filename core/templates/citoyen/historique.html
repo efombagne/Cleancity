@@ -32,6 +32,25 @@
     <i class="ri-history-line" style="color: #16a34a;"></i> Historique des déclarations
   </h1>
 
+  <!-- Barre de recherche et filtres -->
+  <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+    <form method="GET" style="display: flex; gap: 10px; width: 100%;">
+        <input type="text" name="q" placeholder="Rechercher par type ou ID..."
+               value="{{ request.GET.q|default:'' }}"
+               style="padding: 10px 15px; border-radius: 8px; border: 1px solid #e2e8f0; flex-grow: 1; max-width: 300px;">
+
+        <select name="statut" style="padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer;">
+            <option value="">Tous les statuts</option>
+            <option value="en_attente" {% if request.GET.statut == 'en_attente' %}selected{% endif %}>En attente</option>
+            <option value="termine" {% if request.GET.statut == 'termine' %}selected{% endif %}>Terminé</option>
+        </select>
+
+        <button type="submit" style="background: #16a34a; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            Filtrer
+        </button>
+    </form>
+  </div>
+
   <div class="table-container">
     <table>
       <thead>
@@ -72,6 +91,33 @@
         {% endfor %}
       </tbody>
     </table>
+
+    {% if is_paginated %}
+    <div style="display: flex; justify-content: center; margin: 20px 0; gap: 10px;">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}"
+             style="padding: 8px 16px; background: #e2e8f0; border-radius: 6px; text-decoration: none; color: #475569;">Précédent</a>
+        {% endif %}
+
+        <span style="padding: 8px 16px; align-self: center; font-size: 14px;">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}"
+             style="padding: 8px 16px; background: #e2e8f0; border-radius: 6px; text-decoration: none; color: #475569;">Suivant</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <a href="{% url 'core:historique' %}" style="color: #64748b; font-size: 12px; text-decoration: underline;">Réinitialiser les filtres</a>
+    </div>
   </div>
 </div>
+
+<script>
+    document.querySelectorAll('tr').forEach(row => {
+        row.addEventListener('mouseover', () => row.style.backgroundColor = '#f1fdf4');
+        row.addEventListener('mouseout', () => row.style.backgroundColor = 'transparent');
+    });
+</script>
 {% endblock %}
