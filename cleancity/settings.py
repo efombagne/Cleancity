@@ -1,6 +1,7 @@
 
 import os
 from pathlib import Path
+from typing import Any
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,7 +16,7 @@ SECRET_KEY = 'django-insecure-rz9j_cdpzhfaaowvqfp+8lap(=-b29aixuq@fn8o+1-m-ed6m1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: list[Any] = []
 
 
 # Application definition
@@ -132,4 +133,5 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
     'ton_nom.pythonanywhere.com'
-]
+
+
