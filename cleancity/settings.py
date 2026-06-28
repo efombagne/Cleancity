@@ -134,4 +134,8 @@ DEBUG = False
 ALLOWED_HOSTS = [
     'ton_nom.pythonanywhere.com'
 
+]
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+ALLOWED_HOSTS = ["*"]
